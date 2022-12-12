@@ -33,6 +33,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     form.h \
+    glad.h \
     glwidget.h
 
 RESOURCES += \

@@ -3,12 +3,15 @@
 
 //qt
 #include <QOpenGLWidget>
-#include <QOpenGLFunctions>
+//#include <QOpenGLFunctions>
+#include<QOpenGLFunctions_4_5_Core>
+
 #include <QMatrix4x4>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLTexture>
 
 //glm
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -124,7 +127,7 @@ public:
 
 };
 
-class GLWidget : public QOpenGLWidget, QOpenGLFunctions
+class GLWidget : public QOpenGLWidget, QOpenGLFunctions_4_5_Core
 {
     Q_OBJECT
 
@@ -195,6 +198,7 @@ public:
     void draw_arrays(GLenum shape, const std::vector<vertex>& vs)
     {
         vertex_begin(vs.data());
+
         glDrawArrays(shape, 0, vs.size());
         vertex_end();
     }
@@ -228,6 +232,7 @@ protected:
     //顶点属性设置
     void vertex_begin(const vertex* vs)
     {
+
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
         glEnableVertexAttribArray(2);

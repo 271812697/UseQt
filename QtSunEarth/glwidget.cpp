@@ -1,5 +1,4 @@
 #include "glwidget.h"
-
 #include <QMainWindow>
 #include <QPainter>
 #include <QMouseEvent>
