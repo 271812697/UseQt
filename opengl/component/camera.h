@@ -19,6 +19,7 @@ namespace component {
         float zoom_speed;
         float rotate_speed;
         float orbit_speed;
+        float aspect=1.0f;
 
         glm::vec3 initial_position;
         glm::quat initial_rotation;
@@ -28,11 +29,11 @@ namespace component {
 
       public:
         Camera(Transform* T, View view = View::Perspective);
-
+        Camera();
         glm::mat4 GetViewMatrix() const;
         glm::mat4 GetProjectionMatrix() const;
-
-        void Update();
+        void Resize(int w,int h);
+        void Update(float dt);
     };
 
 }

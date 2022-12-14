@@ -15,7 +15,7 @@ out vec2 frag_texcoord;
 void main()
 {
     gl_Position = mvp * vec4(vertex_position, 1.0);
-    //frag_normal = mat3(model) * vertex_normal;
+    
     frag_color = vec4(1.0,1.0,1.0,1.0);
     frag_texcoord = vertex_texcoord;
 }
@@ -26,7 +26,7 @@ void main()
 //precision mediump float;
 
 
-layout(binding = 0) uniform sampler2D texture_id;
+layout(binding = 1) uniform sampler2D texture_id;
 //in vec3 frag_normal;
 in vec4 frag_color;
 in vec2 frag_texcoord;
@@ -37,6 +37,7 @@ void main()
 {
 
         FragColor = frag_color * texture2D(texture_id, frag_texcoord);
+		//FragColor=vec4(1.0,1.0,1.0,1.0);
 
 
 }

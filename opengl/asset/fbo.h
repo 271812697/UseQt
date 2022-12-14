@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FBO_H
+#define FBO_H
 
 #include <vector>
 #include "texture.h"
@@ -64,3 +65,6 @@ namespace asset {
     };
 
 }
+
+#endif
+

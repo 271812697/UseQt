@@ -232,6 +232,7 @@ namespace asset {
     }
 
     Texture::~Texture() {
+        CORE_INFO("release the texture");
         if (id == 0) return;
 
         glDeleteTextures(1, &id);  // texture 0 (a fallback texture that is all black) is silently ignored
@@ -251,7 +252,7 @@ namespace asset {
     }
 
     void Texture::Unbind(GLuint index) const {
-        if (textures_binding_table[index] != 0) {
+        if (textures_binding_table[index] == id) {
             textures_binding_table[index] = 0;
             (*gl)->glBindTextureUnit(index, 0);
         }

@@ -1,38 +1,29 @@
 #include "glwidget.h"
+#include"input.h"
 #include <QMainWindow>
 #include <QPainter>
 #include <QMouseEvent>
 #include <QDebug>
-QOpenGLFunctions_4_5_Core* GLFuncInstance;
+#include"clock.h"
+#include"win_dow.h"
+#include"example/scene01.h"
+scene::Scene *cur=nullptr;
+
+//gl单例
+QOpenGLFunctions_4_5_Core* GLFuncInstance=nullptr;
 QOpenGLFunctions_4_5_Core** getGlInstanceDPtr(){
     return &GLFuncInstance;
 }
 GLWidget::GLWidget(QWidget *parent) :
     QOpenGLWidget(parent)
 {
+
     GLFuncInstance=this;
     //设置可以捕获鼠标移动消息
     this->setMouseTracking(true);
-
-    projection.setToIdentity();
-    view.setToIdentity();
-    model.setToIdentity();
-
-    viewPosition = vec3f(0.0f, 0.0f, -20.0f);
-    viewRotate = vec3f(0.0f);
-
-    mousedown = false;
-
+    this->grabKeyboard();
     texSun = nullptr;
     texEarth = nullptr;
-
-    //初始化数据
-    sunSelfRotate = 0.0f;
-    earthRotate = 0.0f;
-    earthSelfRotate = 0.0f;
-
-    m_speed = 1.0f;
-
     //反锯齿
     QSurfaceFormat format;
     format.setSamples(4);
@@ -54,72 +45,95 @@ GLWidget::~GLWidget()
     }
 }
 
+void GLWidget::keyPressEvent(QKeyEvent *event)
+{
+    unsigned char _key = '0';
+    switch (event->key()) {
+    case Qt::Key_W: case Qt::Key_Up:_key='w';break;
+    case Qt::Key_S: case Qt::Key_Down:_key='s';break;
+    case Qt::Key_A: case Qt::Key_Left:_key='a';break;
+    case Qt::Key_D: case Qt::Key_Right:_key='d';break;
+    case Qt::Key_Q: _key='q';break;
+    case Qt::Key_E: _key='e';break;
+
+    default:
+        return;
+    }
+
+    Input::SetKeyDown(_key, true);
+
+}
+
+void GLWidget::keyReleaseEvent(QKeyEvent *event)
+{
+    unsigned char _key = '0';
+    switch (event->key()) {
+    case Qt::Key_W: case Qt::Key_Up:_key='w';break;
+    case Qt::Key_S: case Qt::Key_Down:_key='s';break;
+    case Qt::Key_A: case Qt::Key_Left:_key='a';break;
+    case Qt::Key_D: case Qt::Key_Right:_key='d';break;
+    case Qt::Key_Q: _key='q';break;
+    case Qt::Key_E: _key='e';break;
+
+    default:
+        return;
+    }
+
+    Input::SetKeyDown(_key, false);
+}
+
 //鼠标按下
 void GLWidget::mousePressEvent(QMouseEvent *e)
 {
-    //记录鼠标信息
-    mousedown = true;
-    button = e->button();
-    lastmouse = vec2i(e->localPos().x(), e->localPos().y());
+
+
+    Qt::MouseButton mb=e->button();
+    MouseButton bt=MouseButton::Right;
+    if(mb==Qt::MouseButton::LeftButton)
+        bt=MouseButton::Left;
+    else if(mb==Qt::MouseButton::MiddleButton)
+        bt=MouseButton::Middle;
+    else if(mb==Qt::MouseButton::RightButton)
+        bt=MouseButton::Right;
+    Input::SetMouseDown(bt, true);
 
 }
 
 //鼠标弹起
-void GLWidget::mouseReleaseEvent(QMouseEvent *)
+void GLWidget::mouseReleaseEvent(QMouseEvent * e)
 {
-    mousedown = false;
+
+    Qt::MouseButton mb=e->button();
+    MouseButton bt=MouseButton::Right;
+    if(mb==Qt::MouseButton::LeftButton)
+        bt=MouseButton::Left;
+    else if(mb==Qt::MouseButton::MiddleButton)
+        bt=MouseButton::Middle;
+    else if(mb==Qt::MouseButton::RightButton)
+        bt=MouseButton::Right;
+    Input::SetMouseDown(bt, false);
 }
 
 //鼠标移动
 void GLWidget::mouseMoveEvent(QMouseEvent *e)
 {
-    // Save mouse press position
-    mouse = vec2i(e->localPos().x(), e->localPos().y());
+    auto pos=e->windowPos();
 
-    if(mousedown){
-        float ox = mouse.x - lastmouse.x;
-        float oy = mouse.y - lastmouse.y;
+    Input::SetCursor(pos.x(), pos.y());
 
-        if(button == Qt::LeftButton){
-            float scale = 0.1;//缩放率
-            viewRotate.y += ox * scale;
-            viewRotate.x += oy * scale;
-        }
-        else if(button == Qt::RightButton){
-            ox /= this->width() / fabs(viewPosition.z);
-            oy /= this->height() / fabs(viewPosition.z);
-            viewPosition.x += ox;
-            viewPosition.y -= oy;
-        }
-
-        lastmouse = mouse;
-    }
 
 }
 
 //鼠标滚动
 void GLWidget::wheelEvent(QWheelEvent *event)
 {
-    if(event->delta() < 0){
-        viewPosition.z *= 1.1;
-    }
-    else {
-        viewPosition.z *= 0.9;
-        if(viewPosition.z > -1.0){
-            viewPosition.z = -1.0;
-        }
-    }
-
+    Input::SetScroll(event->delta());
 }
 
 //计时器事件
 void GLWidget::timerEvent(QTimerEvent *)
 {
-    //星球旋转
-    sunSelfRotate += 0.5f * m_speed;
-    earthSelfRotate += 12.0f * m_speed;
-    earthRotate += 1.0f * m_speed;
-
+    Clock::Update();
     this->update();
 }
 
@@ -127,131 +141,35 @@ void GLWidget::timerEvent(QTimerEvent *)
 //opengl初始化
 void GLWidget::initializeGL()
 {
+    //开启计时器
+    this->startTimer(6);
     //初始化一下扩展函数
     initializeOpenGLFunctions();
-    shader=new asset::Shader("E:/C++/UseQt/opengl/res/es.glsl");
-
-
-
-    shader->Bind();
-
-    //设置采用通道
-
-    //初始化球体
-    mesh.CreateSphere();
-
-    //启用纹理
-    //::glEnable(GL_TEXTURE_2D);
-    texSun = new asset::Texture("E:/C++/UseQt/opengl/res/sun.png");
-    texEarth =new asset::Texture("E:/C++/UseQt/opengl/res/earth.png");
-
-    //开启计时器
-    this->startTimer(16);
+    cur=new scene::scene01("01");
+    cur->Init();
 }
 
 //控件大小改变
 void GLWidget::resizeGL(int w, int h)
 {
-    qDebug() << "控件大小：\n" << w << "x" << h;
-
     if(w == 0 || h == 0){
         return ;
     }
-
+    Window::Resize(w,h);
     glViewport(0, 0, w, h);
-    projection.setToIdentity();
-    projection.perspective(60.0f, float(w)/float(h), 1.0f, 10000.0f);
 }
 
 //绘制事件
 void GLWidget::paintGL()
 {
-    //清屏
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    //参数设置
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    //启用混合
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    //启用渲染器
-    shader->Bind();
-
-    //鼠标控制的视口
-    view.setToIdentity();
-    view.translate(viewPosition.x, viewPosition.y, viewPosition.z);
-    view.rotate(viewRotate.x, 1.0, 0.0, 0.0);
-    view.rotate(viewRotate.y, 0.0, 1.0, 0.0);
-    view.rotate(viewRotate.z, 0.0, 0.0, 1.0);
-
-    //mvp矩阵
-    QMatrix4x4 mvp;
-
-    //启用纹理
-
-
-    //----------------------------------------------------------
-    //绘制太阳
-    model.setToIdentity();
-
-    //自转
-    model.rotate(sunSelfRotate, 0.0f, 1.0f, 0.0f);
-
-    mvp = projection * view * model;
-    shader->SetUniform(4, mvp);
-    shader->SetUniform(5, model);
-
-    texSun->Bind(0);
-    mesh.Draw();
-    texSun->Unbind(0);
-
-    //----------------------------------------------------------
-    //绘制地球
-    const float length = 5.0f;
-
-    model.setToIdentity();
-
-    //公转
-    model.rotate(earthRotate, 0.0f, 1.0f, 0.0f);
-
-    //距离太远距离
-    model.translate(length, 0.0f, 0.0f);
-
-    //自转
-    model.rotate(-earthRotate, 0.0f, 1.0f, 0.0f);
-
-    //地球倾斜23.5度
-    model.rotate(23.5f, 0.0f, 0.0f, 1.0f);
-
-    //自转
-    model.rotate(earthSelfRotate, 0.0f, 1.0f, 0.0f);
-
-    //地球要小一点
-    model.scale(0.25f, 0.25f, 0.25f);
-
-    mvp = projection * view * model;
-    shader->SetUniform(4, mvp);
-    shader->SetUniform(5, model);
-
-    texEarth->Bind(0);
-    mesh.Draw();
-    texEarth->Unbind(0);
-
-
-    //停止使用渲染器
-    shader->Unbind();//program.release();
-
+    cur->OnImGuiRender();
+    cur->OnSceneRender();
     //显示信息
     showinfo();
 }
-
 void GLWidget::showinfo()
 {
+    /*
     char buf[1024];
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -274,9 +192,9 @@ void GLWidget::showinfo()
 
     snprintf(buf, 1024, "speed    : %0.2f", m_speed);
     dc.drawText(10, 120, buf);
+*/
+
 }
-
-
 void GLWidget::sliderValueChange(int n)
 {
     m_speed = n / 100.0f;

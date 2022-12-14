@@ -16,6 +16,7 @@ SOURCES += \
     asset/shader.cpp \
     asset/texture.cpp \
     asset/vao.cpp \
+    clock.cpp \
     component/animator.cpp \
     component/camera.cpp \
     component/light.cpp \
@@ -23,13 +24,18 @@ SOURCES += \
     component/mesh.cpp \
     component/model.cpp \
     component/transform.cpp \
+    example/scene01.cpp \
     glwidget.cpp \
+    input.cpp \
     log.cpp \
     main.cpp \
     mainwindow.cpp \
+    scene/renderer.cpp \
+    scene/scene.cpp \
     util/image.cpp \
     util/math.cpp \
-    util/path.cpp
+    util/path.cpp \
+    win_dow.cpp
 
 HEADERS += \
     InitOpengl.h \
@@ -42,6 +48,7 @@ HEADERS += \
     asset/texture.h \
     asset/vao.h \
     base.h \
+    clock.h \
     component/all.h \
     component/animator.h \
     component/camera.h \
@@ -51,15 +58,22 @@ HEADERS += \
     component/mesh.h \
     component/model.h \
     component/transform.h \
+    example/scene01.h \
     glwidget.h \
+    input.h \
     log.h \
     mainwindow.h \
     pch.h \
+    scene/entity.h \
+    scene/renderer.h \
+    scene/resource.h \
+    scene/scene.h \
     stb_image.h \
     util/ext.h \
     util/image.h \
     util/math.h \
-    util/path.h
+    util/path.h \
+    win_dow.h
 
 FORMS += \
     mainwindow.ui

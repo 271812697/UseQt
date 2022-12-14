@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef EXT_H
+#define EXT_H
 #include <algorithm>
 #include <iterator>
 #include <string_view>
@@ -79,3 +79,5 @@ namespace utils {
     }
 
 }
+#endif
+
