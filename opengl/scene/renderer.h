@@ -1,7 +1,7 @@
 
 
-#pragma once
-
+#ifndef RENDER_H
+#define RENDER_H
 #include <string>
 #include <queue>
 #include <ecs/entt.hpp>
@@ -53,3 +53,5 @@ namespace scene {
     };
 
 }
+#endif
+

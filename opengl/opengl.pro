@@ -32,6 +32,7 @@ SOURCES += \
     mainwindow.cpp \
     scene/renderer.cpp \
     scene/scene.cpp \
+    syn.cpp \
     util/image.cpp \
     util/math.cpp \
     util/path.cpp \
@@ -69,6 +70,7 @@ HEADERS += \
     scene/resource.h \
     scene/scene.h \
     stb_image.h \
+    syn.h \
     util/ext.h \
     util/image.h \
     util/math.h \

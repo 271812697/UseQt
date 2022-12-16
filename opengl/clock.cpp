@@ -27,7 +27,7 @@ void Clock::Update() {
     dfTime=dfMinus/dfFreq;
     Qpart2=Qpart1;
     delta_time = dfTime;
-    time =+ delta_time;
+    time += delta_time;
    // compute frames per second
     frame_count++;
     duration += delta_time;

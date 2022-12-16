@@ -145,8 +145,13 @@ void GLWidget::initializeGL()
     this->startTimer(6);
     //初始化一下扩展函数
     initializeOpenGLFunctions();
+
+    resizeGL(this->width(),this->height());
     cur=new scene::scene01("01");
+
     cur->Init();
+    CORE_INFO("default FrameBuffer is {0}",defaultFramebufferObject());
+
 }
 
 //控件大小改变

@@ -17,7 +17,12 @@ public:
     asset_ref<Texture> prefiltered_map;
     asset_ref<Texture> BRDF_LUT;
     Entity sphere;
+    Entity mingyue;
+    Entity zhaolinger;
     Entity camera;
+    Entity skybox;
+    Entity direct_light;
+    Entity point_light;
 
     void PrecomputeIBL(const std::string& hdri);
     void SetupMaterial(Material& mat,int id);

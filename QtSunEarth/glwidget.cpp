@@ -167,6 +167,8 @@ void GLWidget::resizeGL(int w, int h)
 void GLWidget::paintGL()
 {
     //清屏
+    glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

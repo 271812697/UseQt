@@ -58,7 +58,7 @@ namespace asset {
         }
 
         if (!internal_shader) {
-            internal_shader = WrapAsset<Shader>( "framebuffer.glsl");
+            internal_shader = WrapAsset<Shader>( "../opengl/framebuffer.glsl");
         }
     }
 
@@ -95,6 +95,7 @@ namespace asset {
 
         SetDrawBuffers();  // all render targets are enabled for writing by default
         status = (*gl)->glCheckNamedFramebufferStatus(id, GL_FRAMEBUFFER);
+        CORE_ASERT(status == GL_FRAMEBUFFER_COMPLETE, "Break status: {0}", status);
     }
 
     void FBO::SetColorTexture(GLenum index, GLuint texture_2d) {
@@ -225,6 +226,7 @@ namespace asset {
 
     void FBO::Bind() const {
         if (id != curr_bound_framebuffer) {
+
             CORE_ASERT(status == GL_FRAMEBUFFER_COMPLETE, "Incomplete framebuffer status: {0}", status);
             if (depst_renderbuffer) {
                 depst_renderbuffer->Bind();
