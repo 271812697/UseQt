@@ -8,7 +8,7 @@
 #include"win_dow.h"
 #include"example/scene01.h"
 scene::Scene *cur=nullptr;
-
+unsigned defaultFrame;
 //gl单例
 QOpenGLFunctions_4_5_Core* GLFuncInstance=nullptr;
 QOpenGLFunctions_4_5_Core** getGlInstanceDPtr(){
@@ -150,7 +150,9 @@ void GLWidget::initializeGL()
     cur=new scene::scene01("01");
 
     cur->Init();
-    CORE_INFO("default FrameBuffer is {0}",defaultFramebufferObject());
+
+    defaultFrame=defaultFramebufferObject();
+    CORE_INFO("default FrameBuffer is {0}",defaultFrame);
 
 }
 
@@ -167,6 +169,7 @@ void GLWidget::resizeGL(int w, int h)
 //绘制事件
 void GLWidget::paintGL()
 {
+    defaultFrame=defaultFramebufferObject();
     cur->OnImGuiRender();
     cur->OnSceneRender();
     //显示信息
@@ -174,30 +177,7 @@ void GLWidget::paintGL()
 }
 void GLWidget::showinfo()
 {
-    /*
-    char buf[1024];
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glDisable(GL_DEPTH_TEST);
-
-    QPainter dc(this);
-    dc.setFont(QFont("微软雅黑", 16));
-
-    dc.setPen(Qt::white);
-
-    //文字输出信息
-    snprintf(buf, 1024, "mouse    : %d, %d", mouse.x, mouse.y);
-    dc.drawText(10, 30, buf);
-
-    snprintf(buf, 1024, "position : %0.2f, %0.2f, %0.2f", viewPosition.x, viewPosition.y, viewPosition.z);
-    dc.drawText(10, 60, buf);
-
-    snprintf(buf, 1024, "rotate   : %0.2f, %0.2f, %0.2f", viewRotate.x, viewRotate.y, viewRotate.z);
-    dc.drawText(10, 90, buf);
-
-    snprintf(buf, 1024, "speed    : %0.2f", m_speed);
-    dc.drawText(10, 120, buf);
-*/
 
 }
 void GLWidget::sliderValueChange(int n)

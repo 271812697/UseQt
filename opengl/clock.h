@@ -15,8 +15,8 @@
 
       public:
         static inline float delta_time = 0.0f;
-        static inline float time = 0.0f;
-
+        static inline double time=0.0 ;
+        inline static float total_time=0.0f;
         static inline float fps = 0.0f;  // frames per second (sampled every 0.1 second)
         static inline float ms = 0.0f;   // milliseconds per frame
 

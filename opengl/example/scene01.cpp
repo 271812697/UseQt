@@ -7,18 +7,23 @@
 using namespace asset;
 using namespace component;
 using namespace utils;
+extern unsigned defaultFrame;
 namespace scene {
 float skybox_exposure = 1.0f;
 float skybox_lod = 0.0f;
+QStringList mingyueAnimation;
+size_t* curmingyue=0;
+size_t* curzhaolinger=0;
+QStringList zhaolingerAnimation;
  vec3  dl_direction = vec3(0.7f, -0.7f, 0.0f);
-int defaultFrame=4;
+
 inline QOpenGLFunctions_4_5_Core** gl=getGlInstanceDPtr();
 void scene01::Init()
 {
 
        Renderer::SetScene(this);
       //defaultFrame= reinterpret_cast<QOpenGLWidget*>(* gl)->defaultFramebufferObject();
-      CORE_INFO("default Framebuffer is {0}",defaultFrame);
+       CORE_INFO("default Framebuffer is {0}",defaultFrame);
 
        PrecomputeIBL("../opengl\\res\\texture\\HDRI\\Field-Path-Fence-Steinbacher-Street-4K.hdr");
        this->title = "Animation";
@@ -67,22 +72,28 @@ void scene01::Init()
        mingyue.GetComponent<Transform>().Translate(vec3(5.0f, 0.0f, 5.0f));
        Model& model=mingyue.AddComponent<Model>("../opengl/res/Zhaolinger/Hero_Zhaolinger/Hero_Zhaolinger.fbx",component::Quality::High, true);
        //Model& model = mingyue.AddComponent<Model>("../opengl/res/mingyue/Hero_Mingyue/Hero_Mingyue.fbx", component::Quality::High, true);
-       mingyue.AddComponent<Animator>();
+         curmingyue=&mingyue.AddComponent<Animator>().cur_animation;
        SetupMaterial(model.SetMaterial("Hero_Zhaolinger_Body_Mat_Show",resource_manager.Get<Material>(06)),1);
        SetupMaterial(model.SetMaterial("Hero_Zhaolinger_Hair_Mat_Show",resource_manager.Get<Material>(06)), 2);
        SetupMaterial(model.SetMaterial("Hero_Zhaolinger_Face_Mat_Show",resource_manager.Get<Material>(06)), 3);
+       //model.animations;
+       for(auto it:model.animations){
+           mingyueAnimation<<it->name.c_str();
+       }
 
        zhaolinger= CreateEntity("zhaolinger", component::ETag::Untagged);
        zhaolinger.GetComponent<Transform>().Scale(2.5f);
        zhaolinger.GetComponent<Transform>().Translate(vec3(10.0f, 0.0f, 5.0f));
 
        Model& modelz = zhaolinger.AddComponent<Model>("../opengl/res/mingyue/Hero_Mingyue/Hero_Mingyue.fbx", component::Quality::High, true);
-       zhaolinger.AddComponent<Animator>();
+       curzhaolinger=&zhaolinger.AddComponent<Animator>().cur_animation;
        SetupMaterial(modelz.SetMaterial("Hero_Mingyue_Hair", resource_manager.Get<Material>(06)), 4);
        SetupMaterial(modelz.SetMaterial("Hero_Mingyue_Body_sha", resource_manager.Get<Material>(06)), 5);
        SetupMaterial(modelz.SetMaterial("Hero_Mingyue_Face", resource_manager.Get<Material>(06)), 6);
        SetupMaterial(modelz.SetMaterial("Hero_Mingyue_Body", resource_manager.Get<Material>(06)), 7);
-
+       for(auto it:modelz.animations){
+           zhaolingerAnimation<<it->name.c_str();
+       }
 
        //UBO
        AddUBO(resource_manager.Get<Shader>(02)->ID());
@@ -101,6 +112,8 @@ void scene01::Init()
        Renderer::DepthTest(true);
        Renderer::AlphaBlend(true);
        Renderer::FaceCulling(true);
+
+
 }
 
 void scene01::OnSceneRender()
@@ -188,14 +201,6 @@ void scene01::OnSceneRender()
     Mesh::DrawQuad();
     framebuffer_1.GetColorTexture(0).Unbind(0);
     framebuffer_2.GetColorTexture(1).Unbind(1);
-
-
-    //MSAA
-
-
-
-
-
 }
 
 void scene01::OnImGuiRender()

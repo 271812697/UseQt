@@ -1382,7 +1382,7 @@ void main() {
    // Lo += sc * sl.color.rgb * sl.intensity;
     color = vec4(Lo + Le, px.albedo.a);
     float fade_io = 0.3 + abs(cos(rdr_in.time));
-    bloom = vec4(0,0.0,0.0, 1.0);  // make sure this is not bloomed
+    bloom = vec4((sin(rdr_in.time)+1)/2.0,0.0,0.0, 1.0);  // make sure this is not bloomed
 }
 #endif
 

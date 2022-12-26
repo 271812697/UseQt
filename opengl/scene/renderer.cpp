@@ -234,7 +234,7 @@ namespace scene {
 
             float total_time = Clock::time;
             float delta_time = Clock::delta_time;
-
+            CORE_INFO("render time{0}",total_time);
             renderer_input->SetUniform(0U, utils::val_ptr(resolution));
             renderer_input->SetUniform(1U, utils::val_ptr(cursor_pos));
             renderer_input->SetUniform(2U, utils::val_ptr(near_clip));
