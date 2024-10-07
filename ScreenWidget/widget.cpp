@@ -22,3 +22,21 @@ void Widget::on_pushButton_clicked()
 
 }
 
+
+void Widget::on_pushButton_2_clicked()
+{
+
+}
+
+
+void Widget::on_pushButton_clicked(bool checked)
+{
+
+}
+
+
+void Widget::on_pushButton_3_released()
+{
+
+}
+

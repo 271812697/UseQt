@@ -25,8 +25,6 @@ void QDXWindow::paintEvent(QPaintEvent *event)
 {
 
     static qint64 a=0;
-
-
 }
 
 void QDXWindow::resizeEvent(QResizeEvent *event)
@@ -132,45 +130,45 @@ void QDXWindow::ResizeD3D()
        XYB_SafeDel(m_depthStencilView)
        XYB_SafeDel(m_depthStencilBuffer)
 
-           HRESULT hr;
-           hr=m_swapChain->ResizeBuffers(1,width(),height(),DXGI_FORMAT_R8G8B8A8_UNORM,0);
-           //Create our BackBuffer
-           ID3D11Texture2D* backBuffer;
-           hr=m_swapChain->GetBuffer(0,__uuidof(ID3D11Texture2D),(void**)&backBuffer);
+        HRESULT hr;
+        hr=m_swapChain->ResizeBuffers(1,width(),height(),DXGI_FORMAT_R8G8B8A8_UNORM,0);
+        //Create our BackBuffer
+        ID3D11Texture2D* backBuffer;
+        hr=m_swapChain->GetBuffer(0,__uuidof(ID3D11Texture2D),(void**)&backBuffer);
 
-           //Create our Render Target
-           hr=m_d3dDevice->CreateRenderTargetView(backBuffer,NULL,&m_renderTargetView);
-           XYB_SafeDel(backBuffer)
+        //Create our Render Target
+        hr=m_d3dDevice->CreateRenderTargetView(backBuffer,NULL,&m_renderTargetView);
+        XYB_SafeDel(backBuffer)
 
-           D3D11_TEXTURE2D_DESC depthStencilDesc;
+        D3D11_TEXTURE2D_DESC depthStencilDesc;
 
-           depthStencilDesc.Width=(uint)width();
-           depthStencilDesc.Height=(uint)height();
-           depthStencilDesc.MipLevels=1;
-           depthStencilDesc.ArraySize=1;
-           depthStencilDesc.Format=DXGI_FORMAT_D24_UNORM_S8_UINT;
-           depthStencilDesc.SampleDesc.Count=1;
-           depthStencilDesc.SampleDesc.Quality=0;
-           depthStencilDesc.Usage=D3D11_USAGE_DEFAULT;
-           depthStencilDesc.BindFlags=D3D11_BIND_DEPTH_STENCIL;
-           depthStencilDesc.CPUAccessFlags=0;
-           depthStencilDesc.MiscFlags=0;
+        depthStencilDesc.Width=(uint)width();
+        depthStencilDesc.Height=(uint)height();
+        depthStencilDesc.MipLevels=1;
+        depthStencilDesc.ArraySize=1;
+        depthStencilDesc.Format=DXGI_FORMAT_D24_UNORM_S8_UINT;
+        depthStencilDesc.SampleDesc.Count=1;
+        depthStencilDesc.SampleDesc.Quality=0;
+        depthStencilDesc.Usage=D3D11_USAGE_DEFAULT;
+        depthStencilDesc.BindFlags=D3D11_BIND_DEPTH_STENCIL;
+        depthStencilDesc.CPUAccessFlags=0;
+        depthStencilDesc.MiscFlags=0;
 
-           hr=m_d3dDevice->CreateTexture2D(&depthStencilDesc,NULL,&m_depthStencilBuffer);
-           hr=m_d3dDevice->CreateDepthStencilView(m_depthStencilBuffer,NULL,&m_depthStencilView);
+        hr=m_d3dDevice->CreateTexture2D(&depthStencilDesc,NULL,&m_depthStencilBuffer);
+        hr=m_d3dDevice->CreateDepthStencilView(m_depthStencilBuffer,NULL,&m_depthStencilView);
 
-           m_d3dDevContext->OMSetRenderTargets(1,&m_renderTargetView,m_depthStencilView);
+        m_d3dDevContext->OMSetRenderTargets(1,&m_renderTargetView,m_depthStencilView);
 
-           ZeroMemory(&viewport,sizeof(D3D11_VIEWPORT));
+        ZeroMemory(&viewport,sizeof(D3D11_VIEWPORT));
 
-           viewport.TopLeftX=0;
-           viewport.TopLeftY=0;
-           viewport.Width=width();
-           viewport.Height=height();
-           viewport.MinDepth=0.0f;
-           viewport.MaxDepth=1.0f;
+        viewport.TopLeftX=0;
+        viewport.TopLeftY=0;
+        viewport.Width=width();
+        viewport.Height=height();
+        viewport.MinDepth=0.0f;
+        viewport.MaxDepth=1.0f;
 
-           m_d3dDevContext->RSSetViewports(1,&viewport);
+        m_d3dDevContext->RSSetViewports(1,&viewport);
 
 }
 
@@ -181,10 +179,7 @@ void QDXWindow::RenderInit()
 
 void QDXWindow::RenderUpdate()
 {
-
-
     static float time=0;
-
     time+=0.02;
     float bg[4]={(sin(time)+1)/2,(cos(time)+1)/2,(sin(time)+1)/2,0.1};
     m_d3dDevContext->ClearRenderTargetView(m_renderTargetView,bg);
