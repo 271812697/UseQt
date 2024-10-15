@@ -278,17 +278,17 @@ void GLWidget::paintGL()
 	draw_arrays(GL_LINE_LOOP, vs);//绘制连线
 
 	//绘制坐标系
-	/*
+
 	//绘制一个坐标系
 	color = vec4f(1.0f, 0.0f, 0.0f, 1.0f);
-	draw_line(0.0f, 0.0f, 0.0f, 10000.0f, 0.0f, 0.0f);
+	draw_line(0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
 
 	color = vec4f(0.0f, 1.0f, 0.0f, 1.0f);
-	draw_line(0.0f, 0.0f, 0.0f, 0.0f, 10000.0f, 0.0f);
+	draw_line(0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
 	color = vec4f(0.0f, 0.0f, 1.0f, 1.0f);
-	draw_line(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -10000.0f);
-	//*/
+	draw_line(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f);
+	//
 
 	//停止使用渲染器
 	program.release();

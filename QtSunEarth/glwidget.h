@@ -2,7 +2,6 @@
 #define GLWIDGET_H
 //qt
 #include <QOpenGLWidget>
-//#include <QOpenGLFunctions>
 #include<QOpenGLFunctions_4_5_Core>
 
 #include <QMatrix4x4>
