@@ -1,6 +1,7 @@
 #pragma once
+#include "viewer/Viewer.h"
 #include <QOpenGLWidget>
-#include<QOpenGLFunctions_4_5_Core>
+#include <QOpenGLFunctions_4_5_Core>
 
 namespace MOON {
 
@@ -15,7 +16,6 @@ namespace MOON {
 
 		void initializeGL() override;
 		void timerEvent(QTimerEvent* e) override;
-		void resizeGL(int w, int h) override;
 
 		void paintGL() override;
 
@@ -30,7 +30,8 @@ namespace MOON {
 		void mouseReleaseEvent(QMouseEvent* event) override;
 
 		void wheelEvent(QWheelEvent* event) override;
-
+	public:
+		Viewer viewer;
 
 	};
 }
