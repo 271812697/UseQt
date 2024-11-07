@@ -5,7 +5,7 @@
 #include <Eigen/Core>
 
 
-namespace Geomerty
+namespace MOON
 {
 
 	// Forward declaration
@@ -15,7 +15,7 @@ namespace Geomerty
 	class ViewerCore
 	{
 	public:
-		using GLuint = MeshGL::GLuint;
+		using GLuint = unsigned int;
 		ViewerCore();
 
 		/// Initialization
@@ -92,13 +92,7 @@ namespace Geomerty
 			Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic>& G,
 			Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic>& B,
 			Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic>& A);
-		/// Draw the text lables
-		/// @param[in] data  which ViewerData to draw
-		/// @param[in] labels  text labels to draw
-		void draw_labels(
-			ViewerData& data,
-			const Geomerty::MeshGL::TextGL& labels
-		);
+
 
 		/// Type of user interface for changing the view rotation based on the mouse
 		/// draggin.

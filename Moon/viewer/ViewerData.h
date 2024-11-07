@@ -1,12 +1,11 @@
 #pragma once
 #include "MeshGL.h"
-#include "colormap.h"
 #include <cassert>
 #include <cstdint>
 #include <Eigen/Core>
 #include <memory>
 #include <vector>
-namespace Geomerty
+namespace MOON
 {
 	class ViewerCore;
 	class ViewerData
@@ -41,15 +40,7 @@ namespace Geomerty
 			const Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic>& G,
 			const Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic>& B);
 
-		void set_data(
-			const Eigen::VectorXd& D,
-			double caxis_min,
-			double caxis_max,
-			ColorMapType cmap = COLOR_MAP_TYPE_VIRIDIS,
-			int num_steps = 21);
-		void set_data(const Eigen::VectorXd& D,
-			ColorMapType cmap = COLOR_MAP_TYPE_VIRIDIS,
-			int num_steps = 21);
+
 
 		void set_colormap(const Eigen::MatrixXd& CM);
 
@@ -183,16 +174,16 @@ namespace Geomerty
 		Eigen::Matrix<float, 4, 1, Eigen::DontAlign> label_color;
 		float shininess;
 		int id;
-		Geomerty::MeshGL meshgl;
+		MOON::MeshGL meshgl;
 		void update_labels(
-			Geomerty::MeshGL::TextGL& GL_labels,
+			MOON::MeshGL::TextGL& GL_labels,
 			const Eigen::MatrixXd& positions,
 			const std::vector<std::string>& strings
 		);
 		void updateGL(
-			const Geomerty::ViewerData& data,
+			const MOON::ViewerData& data,
 			const bool invert_normals,
-			Geomerty::MeshGL& meshgl);
+			MOON::MeshGL& meshgl);
 	};
 
-} // namespace Geomerty
+} // 

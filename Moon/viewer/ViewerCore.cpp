@@ -1,25 +1,17 @@
 #include "ViewerCore.h"
 #include "ViewerData.h"
+#include "glutil/util.h"
 #include <glad/glad.h>
-#include "quat_to_mat.h"
-#include "null.h"
-#include "snap_to_fixed_up.h"
-#include "look_at.h"
-#include "frustum.h"
-#include "ortho.h"
-#include "massmatrix.h"
-#include "barycenter.h"
-#include "PI.h"
-#include "report_gl_error.h"
-#include "read_pixels.h"
 #include <Eigen/Geometry>
 #include <iostream>
+static constexpr double PI = 3.1415926535897932384626433832795;
+
 
 extern GLuint shader_mesh;
 extern GLuint shader_overlay_lines;
 extern GLuint shader_overlay_points;
 extern GLuint shader_text;
-void Geomerty::ViewerCore::align_camera_center(
+void MOON::ViewerCore::align_camera_center(
 	const Eigen::MatrixXd& V,
 	const Eigen::MatrixXi& F)
 {
@@ -34,7 +26,7 @@ void Geomerty::ViewerCore::align_camera_center(
 	}
 }
 
-void Geomerty::ViewerCore::get_scale_and_shift_to_fit_mesh(
+void MOON::ViewerCore::get_scale_and_shift_to_fit_mesh(
 	const Eigen::MatrixXd& V,
 	const Eigen::MatrixXi& F,
 	float& zoom,
@@ -55,7 +47,7 @@ void Geomerty::ViewerCore::get_scale_and_shift_to_fit_mesh(
 	return get_scale_and_shift_to_fit_mesh(BC, zoom, shift);
 }
 
-void Geomerty::ViewerCore::align_camera_center(
+void MOON::ViewerCore::align_camera_center(
 	const Eigen::MatrixXd& V)
 {
 	if (V.rows() == 0)
@@ -69,7 +61,7 @@ void Geomerty::ViewerCore::align_camera_center(
 	}
 }
 
-void Geomerty::ViewerCore::get_scale_and_shift_to_fit_mesh(
+void MOON::ViewerCore::get_scale_and_shift_to_fit_mesh(
 	const Eigen::MatrixXd& V,
 	float& zoom,
 	Eigen::Vector3f& shift)
@@ -86,7 +78,7 @@ void Geomerty::ViewerCore::get_scale_and_shift_to_fit_mesh(
 }
 
 
-void Geomerty::ViewerCore::clear_framebuffers()
+void MOON::ViewerCore::clear_framebuffers()
 {
 	// The glScissor call ensures we only clear this core's buffers,
 	// (in case the user wants different background colors in each viewport.)
@@ -100,7 +92,7 @@ void Geomerty::ViewerCore::clear_framebuffers()
 	glDisable(GL_SCISSOR_TEST);
 }
 
-void Geomerty::ViewerCore::draw(
+void MOON::ViewerCore::draw(
 	ViewerData& data,
 	bool update_matrices)
 {
@@ -273,15 +265,10 @@ void Geomerty::ViewerCore::draw(
 		glEnable(GL_DEPTH_TEST);
 	}
 
-	if (is_set(data.show_vertex_labels) && data.vertex_labels_positions.rows() > 0)
-		draw_labels(data, data.meshgl.vertex_labels);
-	if (is_set(data.show_face_labels) && data.face_labels_positions.rows() > 0)
-		draw_labels(data, data.meshgl.face_labels);
-	if (is_set(data.show_custom_labels) && data.labels_positions.rows() > 0)
-		draw_labels(data, data.meshgl.custom_labels);
+
 }
 
-void Geomerty::ViewerCore::initialize_shadow_pass()
+void MOON::ViewerCore::initialize_shadow_pass()
 {
 	// attach buffers
 	glBindFramebuffer(GL_FRAMEBUFFER, shadow_depth_fbo);
@@ -322,20 +309,20 @@ void Geomerty::ViewerCore::initialize_shadow_pass()
 		ortho(-h * shadow_width / shadow_height, h * shadow_width / shadow_height, -h, h, camera_dnear, camera_dfar, shadow_proj);
 }
 
-void Geomerty::ViewerCore::deinitialize_shadow_pass()
+void MOON::ViewerCore::deinitialize_shadow_pass()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
-void Geomerty::ViewerCore::draw_shadow_pass(
+void MOON::ViewerCore::draw_shadow_pass(
 	ViewerData& data,
 	bool /*update_matrices*/)
 {
 	if (data.dirty)
 	{
 		data.updateGL(data, data.invert_normals, data.meshgl);
-		data.dirty = Geomerty::MeshGL::DIRTY_NONE;
+		data.dirty = MOON::MeshGL::DIRTY_NONE;
 	}
 	data.meshgl.bind_mesh();
 	// Send transformations to the GPU as if rendering from shadow point of view
@@ -349,7 +336,7 @@ void Geomerty::ViewerCore::draw_shadow_pass(
 
 }
 
-void Geomerty::ViewerCore::draw_buffer(
+void MOON::ViewerCore::draw_buffer(
 	ViewerData& data,
 	bool update_matrices,
 	Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic>& R,
@@ -467,36 +454,9 @@ void Geomerty::ViewerCore::draw_buffer(
 	free(pixels);
 }
 
-// Define uniforms for text labels
-void Geomerty::ViewerCore::draw_labels(
-	ViewerData& data,
-	const Geomerty::MeshGL::TextGL& labels
-) {
-	glDisable(GL_LINE_SMOOTH); // Clear settings if overlay is activated
-	data.meshgl.bind_labels(labels);
-	GLint viewi = glGetUniformLocation(shader_text, "view");
-	GLint proji = glGetUniformLocation(shader_text, "proj");
-	glUniformMatrix4fv(viewi, 1, GL_FALSE, view.data());
-	glUniformMatrix4fv(proji, 1, GL_FALSE, proj.data());
-	// Parameters for mapping characters from font atlass
-	float width = viewport(2);
-	float height = viewport(3);
-	float text_shift_scale_factor = orthographic ? 0.01 : 0.03;
-	float render_scale = (orthographic ? 0.6 : 1.7) * data.label_size;
-	glUniform1f(glGetUniformLocation(shader_text, "TextShiftFactor"), text_shift_scale_factor);
-	glUniform3f(glGetUniformLocation(shader_text, "TextColor"), data.label_color(0), data.label_color(1), data.label_color(2));
-	glUniform2f(glGetUniformLocation(shader_text, "CellSize"), 1.0f / 16, (300.0f / 384) / 6);
-	glUniform2f(glGetUniformLocation(shader_text, "CellOffset"), 0.5 / 256.0, 0.5 / 256.0);
-	glUniform2f(glGetUniformLocation(shader_text, "RenderSize"),
-		render_scale * 0.75 * 16 / (width),
-		render_scale * 0.75 * 33.33 / (height));
-	glUniform2f(glGetUniformLocation(shader_text, "RenderOrigin"), -2, 2);
-	data.meshgl.draw_labels(labels);
-	glEnable(GL_DEPTH_TEST);
-}
 
-void Geomerty::ViewerCore::set_rotation_type(
-	const Geomerty::ViewerCore::RotationType& value)
+void MOON::ViewerCore::set_rotation_type(
+	const MOON::ViewerCore::RotationType& value)
 {
 	using namespace Eigen;
 	using namespace std;
@@ -509,7 +469,7 @@ void Geomerty::ViewerCore::set_rotation_type(
 	}
 }
 
-void Geomerty::ViewerCore::set(unsigned int& property_mask, bool value) const
+void MOON::ViewerCore::set(unsigned int& property_mask, bool value) const
 {
 	if (!value)
 		unset(property_mask);
@@ -517,22 +477,22 @@ void Geomerty::ViewerCore::set(unsigned int& property_mask, bool value) const
 		property_mask |= id;
 }
 
-void Geomerty::ViewerCore::unset(unsigned int& property_mask) const
+void MOON::ViewerCore::unset(unsigned int& property_mask) const
 {
 	property_mask &= ~id;
 }
 
-void Geomerty::ViewerCore::toggle(unsigned int& property_mask) const
+void MOON::ViewerCore::toggle(unsigned int& property_mask) const
 {
 	property_mask ^= id;
 }
 
-bool Geomerty::ViewerCore::is_set(unsigned int property_mask) const
+bool MOON::ViewerCore::is_set(unsigned int property_mask) const
 {
 	return (property_mask & id);
 }
 
-Geomerty::ViewerCore::ViewerCore()
+MOON::ViewerCore::ViewerCore()
 {
 	// Default colors
 	background_color << 0.1f, 0.1f, 0.1f, 1.0f;
@@ -572,25 +532,25 @@ Geomerty::ViewerCore::ViewerCore()
 	viewport.setZero();
 }
 
-void Geomerty::ViewerCore::init()
+void MOON::ViewerCore::init()
 {
 	delete_shadow_buffers();
 	generate_shadow_buffers();
 }
 
-void Geomerty::ViewerCore::shut()
+void MOON::ViewerCore::shut()
 {
 	delete_shadow_buffers();
 }
 
-void Geomerty::ViewerCore::delete_shadow_buffers()
+void MOON::ViewerCore::delete_shadow_buffers()
 {
 	glDeleteTextures(1, &shadow_depth_tex);
 	glDeleteFramebuffers(1, &shadow_depth_fbo);
 	glDeleteRenderbuffers(1, &shadow_color_rbo);
 }
 
-void Geomerty::ViewerCore::generate_shadow_buffers()
+void MOON::ViewerCore::generate_shadow_buffers()
 {
 	// Create a texture for writing the shadow map depth values into
 	{

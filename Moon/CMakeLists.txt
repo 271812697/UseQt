@@ -21,7 +21,7 @@ target_link_libraries(${TARGET_NAME} PUBLIC
     glad
 )
 target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} ${EIGEN3_INCLUDE_DIR})
-
+target_compile_options(${TARGET_NAME} PRIVATE /bigobj)
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 17)
 
 

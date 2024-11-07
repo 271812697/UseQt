@@ -2,7 +2,7 @@
 #include <Eigen/Core>
 #include <cstdint>
 
-namespace Geomerty
+namespace MOON
 {
 	class ViewerCore;
 	class MeshGL
@@ -156,12 +156,6 @@ namespace Geomerty
 		/// Draw the currently buffered point overlay
 		void draw_overlay_points();
 
-		/// Text Binding and Draw functions
-		void init_text_rendering();
-		/// Bind the underlying OpenGL buffer objects for subsequent text draw calls
-		void bind_labels(const TextGL& labels);
-		/// Draw the currently buffered text
-		void draw_labels(const TextGL& labels);
 
 		/// Release the OpenGL buffer objects
 		void free_buffers();

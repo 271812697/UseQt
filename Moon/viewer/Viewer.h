@@ -8,7 +8,7 @@
 #include <string>
 #include <cstdint>
 
-namespace Geomerty
+namespace MOON
 {
 	class Viewer
 	{
@@ -40,7 +40,7 @@ namespace Geomerty
 		template <typename T>
 		void draw_buffer(
 			// can't be const because of writing in and out of `core.viewport`
-			/*const*/ Geomerty::ViewerCore& core,
+			/*const*/ MOON::ViewerCore& core,
 			Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& R,
 			Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& G,
 			Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& B,
@@ -50,7 +50,7 @@ namespace Geomerty
 		void resize(int w, int h); // explicitly set window size
 		void post_resize(int w, int h); // external resize due to user interaction
 
-		void snap_to_canonical_quaternion();
+		//void snap_to_canonical_quaternion();
 
 		ViewerData& data(int mesh_id = -1);
 		const ViewerData& data(int mesh_id = -1) const;

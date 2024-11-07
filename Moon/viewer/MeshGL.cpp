@@ -1,9 +1,7 @@
 #include "MeshGL.h"
 #include <glad/glad.h>
-#include "bind_vertex_attrib_array.h"
 #include "glutil/util.h"
-#include "destroy_shader_program.h"
-#include "verasansmono_compressed.h"
+
 #include <iostream>
 
 unsigned int shader_mesh;
@@ -280,14 +278,14 @@ static void init_shaders() {
 		{},
 		shader_text);
 }
-Geomerty::MeshGL::MeshGL() :
+MOON::MeshGL::MeshGL() :
 	tex_filter(GL_LINEAR),
 	tex_wrap(GL_REPEAT),
 	model(Eigen::Matrix4f::Identity())
 {
 }
 
-void Geomerty::MeshGL::init_buffers()
+void MOON::MeshGL::init_buffers()
 {
 	// Mesh: Vertex std::vector Object & Buffer objects
 	glGenVertexArrays(1, &vao_mesh);
@@ -324,7 +322,7 @@ void Geomerty::MeshGL::init_buffers()
 	dirty = MeshGL::DIRTY_ALL;
 }
 
-void Geomerty::MeshGL::free_buffers()
+void MOON::MeshGL::free_buffers()
 {
 	if (is_initialized)
 	{
@@ -357,7 +355,7 @@ void Geomerty::MeshGL::free_buffers()
 	}
 }
 
-void Geomerty::MeshGL::TextGL::init_buffers()
+void MOON::MeshGL::TextGL::init_buffers()
 {
 	glGenVertexArrays(1, &vao_labels);
 	glBindVertexArray(vao_labels);
@@ -366,23 +364,23 @@ void Geomerty::MeshGL::TextGL::init_buffers()
 	glGenBuffers(1, &vbo_labels_offset);
 	glGenBuffers(1, &vbo_labels_indices);
 }
-void Geomerty::MeshGL::TextGL::free_buffers()
+void MOON::MeshGL::TextGL::free_buffers()
 {
 	glDeleteBuffers(1, &vbo_labels_pos);
 	glDeleteBuffers(1, &vbo_labels_characters);
 	glDeleteBuffers(1, &vbo_labels_offset);
 	glDeleteBuffers(1, &vbo_labels_indices);
 }
-void Geomerty::MeshGL::bind_mesh()
+void MOON::MeshGL::bind_mesh()
 {
 	glBindVertexArray(vao_mesh);
 	glUseProgram(shader_mesh);
-	bind_vertex_attrib_array(shader_mesh, "position", vbo_V, V_vbo, dirty & MeshGL::DIRTY_POSITION);
-	bind_vertex_attrib_array(shader_mesh, "normal", vbo_V_normals, V_normals_vbo, dirty & MeshGL::DIRTY_NORMAL);
-	bind_vertex_attrib_array(shader_mesh, "Ka", vbo_V_ambient, V_ambient_vbo, dirty & MeshGL::DIRTY_AMBIENT);
-	bind_vertex_attrib_array(shader_mesh, "Kd", vbo_V_diffuse, V_diffuse_vbo, dirty & MeshGL::DIRTY_DIFFUSE);
-	bind_vertex_attrib_array(shader_mesh, "Ks", vbo_V_specular, V_specular_vbo, dirty & MeshGL::DIRTY_SPECULAR);
-	bind_vertex_attrib_array(shader_mesh, "texcoord", vbo_V_uv, V_uv_vbo, dirty & MeshGL::DIRTY_UV);
+	MOON::bind_vertex_attrib_array(shader_mesh, "position", vbo_V, V_vbo, dirty & MeshGL::DIRTY_POSITION);
+	MOON::bind_vertex_attrib_array(shader_mesh, "normal", vbo_V_normals, V_normals_vbo, dirty & MeshGL::DIRTY_NORMAL);
+	MOON::bind_vertex_attrib_array(shader_mesh, "Ka", vbo_V_ambient, V_ambient_vbo, dirty & MeshGL::DIRTY_AMBIENT);
+	MOON::bind_vertex_attrib_array(shader_mesh, "Kd", vbo_V_diffuse, V_diffuse_vbo, dirty & MeshGL::DIRTY_DIFFUSE);
+	MOON::bind_vertex_attrib_array(shader_mesh, "Ks", vbo_V_specular, V_specular_vbo, dirty & MeshGL::DIRTY_SPECULAR);
+	MOON::bind_vertex_attrib_array(shader_mesh, "texcoord", vbo_V_uv, V_uv_vbo, dirty & MeshGL::DIRTY_UV);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_F);
 	if (dirty & MeshGL::DIRTY_FACE)
@@ -403,18 +401,18 @@ void Geomerty::MeshGL::bind_mesh()
 	dirty &= ~MeshGL::DIRTY_MESH;
 }
 
-void Geomerty::MeshGL::draw_mesh_custom(int index, ViewerCore& view_core)
+void MOON::MeshGL::draw_mesh_custom(int index, ViewerCore& view_core)
 {
 	assert(index < custom_shaders.size());
 	glBindVertexArray(vao_mesh);
 	auto shader = custom_shaders[index].first;
 	glUseProgram(shader);
-	bind_vertex_attrib_array(shader, "position", vbo_V, V_vbo, dirty & MeshGL::DIRTY_POSITION);
-	bind_vertex_attrib_array(shader, "normal", vbo_V_normals, V_normals_vbo, dirty & MeshGL::DIRTY_NORMAL);
-	bind_vertex_attrib_array(shader, "Ka", vbo_V_ambient, V_ambient_vbo, dirty & MeshGL::DIRTY_AMBIENT);
-	bind_vertex_attrib_array(shader, "Kd", vbo_V_diffuse, V_diffuse_vbo, dirty & MeshGL::DIRTY_DIFFUSE);
-	bind_vertex_attrib_array(shader, "Ks", vbo_V_specular, V_specular_vbo, dirty & MeshGL::DIRTY_SPECULAR);
-	bind_vertex_attrib_array(shader, "texcoord", vbo_V_uv, V_uv_vbo, dirty & MeshGL::DIRTY_UV);
+	MOON::bind_vertex_attrib_array(shader, "position", vbo_V, V_vbo, dirty & MeshGL::DIRTY_POSITION);
+	MOON::bind_vertex_attrib_array(shader, "normal", vbo_V_normals, V_normals_vbo, dirty & MeshGL::DIRTY_NORMAL);
+	MOON::bind_vertex_attrib_array(shader, "Ka", vbo_V_ambient, V_ambient_vbo, dirty & MeshGL::DIRTY_AMBIENT);
+	MOON::bind_vertex_attrib_array(shader, "Kd", vbo_V_diffuse, V_diffuse_vbo, dirty & MeshGL::DIRTY_DIFFUSE);
+	MOON::bind_vertex_attrib_array(shader, "Ks", vbo_V_specular, V_specular_vbo, dirty & MeshGL::DIRTY_SPECULAR);
+	MOON::bind_vertex_attrib_array(shader, "texcoord", vbo_V_uv, V_uv_vbo, dirty & MeshGL::DIRTY_UV);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_F);
 	if (dirty & MeshGL::DIRTY_FACE)
@@ -423,14 +421,14 @@ void Geomerty::MeshGL::draw_mesh_custom(int index, ViewerCore& view_core)
 	custom_shaders[index].second(shader, *this, view_core);
 }
 
-void Geomerty::MeshGL::bind_overlay_lines()
+void MOON::MeshGL::bind_overlay_lines()
 {
 	bool is_dirty = dirty & MeshGL::DIRTY_OVERLAY_LINES;
 
 	glBindVertexArray(vao_overlay_lines);
 	glUseProgram(shader_overlay_lines);
-	bind_vertex_attrib_array(shader_overlay_lines, "position", vbo_lines_V, lines_V_vbo, is_dirty);
-	bind_vertex_attrib_array(shader_overlay_lines, "color", vbo_lines_V_colors, lines_V_colors_vbo, is_dirty);
+	MOON::bind_vertex_attrib_array(shader_overlay_lines, "position", vbo_lines_V, lines_V_vbo, is_dirty);
+	MOON::bind_vertex_attrib_array(shader_overlay_lines, "color", vbo_lines_V_colors, lines_V_colors_vbo, is_dirty);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_lines_F);
 	if (is_dirty)
@@ -441,14 +439,14 @@ void Geomerty::MeshGL::bind_overlay_lines()
 	dirty &= ~MeshGL::DIRTY_OVERLAY_LINES;
 }
 
-void Geomerty::MeshGL::bind_overlay_points()
+void MOON::MeshGL::bind_overlay_points()
 {
 	bool is_dirty = dirty & MeshGL::DIRTY_OVERLAY_POINTS;
 
 	glBindVertexArray(vao_overlay_points);
 	glUseProgram(shader_overlay_points);
-	bind_vertex_attrib_array(shader_overlay_points, "position", vbo_points_V, points_V_vbo, is_dirty);
-	bind_vertex_attrib_array(shader_overlay_points, "color", vbo_points_V_colors, points_V_colors_vbo, is_dirty);
+	MOON::bind_vertex_attrib_array(shader_overlay_points, "position", vbo_points_V, points_V_vbo, is_dirty);
+	MOON::bind_vertex_attrib_array(shader_overlay_points, "color", vbo_points_V_colors, points_V_colors_vbo, is_dirty);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo_points_F);
 	if (is_dirty)
@@ -459,44 +457,9 @@ void Geomerty::MeshGL::bind_overlay_points()
 	dirty &= ~MeshGL::DIRTY_OVERLAY_POINTS;
 }
 
-void Geomerty::MeshGL::init_text_rendering()
-{
-	// Decompress the png of the font atlas
-	unsigned char verasansmono_font_atlas[256 * 256];
-	decompress_verasansmono_atlas(verasansmono_font_atlas);
 
-	// Bind atlas
-	glBindTexture(GL_TEXTURE_2D, font_atlas);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, 256, 256, 0, GL_RED, GL_UNSIGNED_BYTE, verasansmono_font_atlas);
 
-	// TextGL initialization
-	vertex_labels.dirty_flag = MeshGL::DIRTY_VERTEX_LABELS;
-	face_labels.dirty_flag = MeshGL::DIRTY_FACE_LABELS;
-	custom_labels.dirty_flag = MeshGL::DIRTY_CUSTOM_LABELS;
-}
-
-void Geomerty::MeshGL::bind_labels(const TextGL& labels)
-{
-	bool is_dirty = dirty & labels.dirty_flag;
-	glBindTexture(GL_TEXTURE_2D, font_atlas);
-	glBindVertexArray(labels.vao_labels);
-	glUseProgram(shader_text);
-	bind_vertex_attrib_array(shader_text, "position", labels.vbo_labels_pos, labels.label_pos_vbo, is_dirty);
-	bind_vertex_attrib_array(shader_text, "character", labels.vbo_labels_characters, labels.label_char_vbo, is_dirty);
-	bind_vertex_attrib_array(shader_text, "offset", labels.vbo_labels_offset, labels.label_offset_vbo, is_dirty);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, labels.vbo_labels_indices);
-	if (is_dirty)
-	{
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned) * labels.label_indices_vbo.size(), labels.label_indices_vbo.data(), GL_DYNAMIC_DRAW);
-	}
-	dirty &= ~labels.dirty_flag;
-}
-
-void Geomerty::MeshGL::draw_mesh(bool solid)
+void MOON::MeshGL::draw_mesh(bool solid)
 {
 	glPolygonMode(GL_FRONT_AND_BACK, solid ? GL_FILL : GL_LINE);
 
@@ -513,22 +476,19 @@ void Geomerty::MeshGL::draw_mesh(bool solid)
 }
 
 
-void Geomerty::MeshGL::draw_overlay_lines()
+void MOON::MeshGL::draw_overlay_lines()
 {
 	glDrawElements(GL_LINES, lines_F_vbo.rows(), GL_UNSIGNED_INT, 0);
 }
 
-void Geomerty::MeshGL::draw_overlay_points()
+void MOON::MeshGL::draw_overlay_points()
 {
 	glDrawElements(GL_POINTS, points_F_vbo.rows(), GL_UNSIGNED_INT, 0);
 }
 
-void Geomerty::MeshGL::draw_labels(const TextGL& labels)
-{
-	glDrawElements(GL_POINTS, labels.label_indices_vbo.rows(), GL_UNSIGNED_INT, 0);
-}
 
-void Geomerty::MeshGL::init()
+
+void MOON::MeshGL::init()
 {
 	if (is_initialized)
 	{
@@ -542,25 +502,42 @@ void Geomerty::MeshGL::init()
 
 
 	init_buffers();
-	init_text_rendering();
+
 
 }
 
-GLuint Geomerty::MeshGL::AddShader(std::string vert, std::string geo, std::string frag, std::function<void(GLuint program_id, MeshGL& mesh_gl, ViewerCore& view_core)>custom_draw)
+GLuint MOON::MeshGL::AddShader(std::string vert, std::string geo, std::string frag, std::function<void(GLuint program_id, MeshGL& mesh_gl, ViewerCore& view_core)>custom_draw)
 {
 	GLuint program_id;
-	create_shader_program(geo, vert, frag, {}, program_id);
+	MOON::create_shader_program(geo, vert, frag, {}, program_id);
 	custom_shaders.push_back(std::make_pair(program_id, custom_draw));
 	return program_id;
 }
 
-void Geomerty::MeshGL::free()
+void MOON::MeshGL::free()
 {
 	const auto free = [](GLuint& id)
 		{
 			if (id)
 			{
-				destroy_shader_program(id);
+				// Get each attached shader one by one and detach and delete it
+				GLsizei count;
+				// shader id
+				GLuint s;
+				do
+				{
+					// Try to get at most *1* attached shader
+					glGetAttachedShaders(id, 1, &count, &s);
+					// Check that we actually got *1*
+					if (count == 1)
+					{
+						// Detach and delete this shader
+						glDetachShader(id, s);
+						glDeleteShader(s);
+					}
+				} while (count > 0);
+				// Now that all of the shaders are gone we can just delete the program
+				glDeleteProgram(id);
 				id = 0;
 			}
 		};

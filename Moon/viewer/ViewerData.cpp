@@ -1,16 +1,13 @@
 #include "ViewerData.h"
 #include "ViewerCore.h"
-#include "glviewer/destroy_shader_program.h"
-#include "per_face_normals.h"
-#include "material_colors.h"
-#include "per_vertex_normals.h"
-
-#include<glad/glad.h>
-
-#include <iostream>
+#include "glutil/colors.h"
+#include "glutil/per_face_normals.h"
+#include "glutil/per_vertex_normals.h"
+#include <glad/glad.h>
+#include<iostream>
 
 
-Geomerty::ViewerData::ViewerData()
+MOON::ViewerData::ViewerData()
 	:
 	dirty(MeshGL::DIRTY_ALL),
 	face_based(false),
@@ -37,7 +34,7 @@ Geomerty::ViewerData::ViewerData()
 	clear();
 };
 
-void Geomerty::ViewerData::set_face_based(bool newvalue)
+void MOON::ViewerData::set_face_based(bool newvalue)
 {
 	if (face_based != newvalue)
 	{
@@ -47,7 +44,7 @@ void Geomerty::ViewerData::set_face_based(bool newvalue)
 }
 
 // Helpers that draws the most common meshes
-void Geomerty::ViewerData::set_mesh(
+void MOON::ViewerData::set_mesh(
 	const Eigen::MatrixXd& _V, const Eigen::MatrixXi& _F)
 {
 	using namespace std;
@@ -90,14 +87,14 @@ void Geomerty::ViewerData::set_mesh(
 	dirty |= MeshGL::DIRTY_FACE | MeshGL::DIRTY_POSITION;
 }
 
-void Geomerty::ViewerData::set_vertices(const Eigen::MatrixXd& _V)
+void MOON::ViewerData::set_vertices(const Eigen::MatrixXd& _V)
 {
 	V = _V;
 	assert(F.size() == 0 || F.maxCoeff() < V.rows());
 	dirty |= MeshGL::DIRTY_POSITION;
 }
 
-void Geomerty::ViewerData::set_normals(const Eigen::MatrixXd& N)
+void MOON::ViewerData::set_normals(const Eigen::MatrixXd& N)
 {
 	using namespace std;
 	if (N.rows() == V.rows())
@@ -115,7 +112,7 @@ void Geomerty::ViewerData::set_normals(const Eigen::MatrixXd& N)
 	dirty |= MeshGL::DIRTY_NORMAL;
 }
 
-void Geomerty::ViewerData::set_visible(bool value, unsigned int core_id /*= 1*/)
+void MOON::ViewerData::set_visible(bool value, unsigned int core_id /*= 1*/)
 {
 	if (value)
 		is_visible |= core_id;
@@ -123,7 +120,7 @@ void Geomerty::ViewerData::set_visible(bool value, unsigned int core_id /*= 1*/)
 		is_visible &= ~core_id;
 }
 
-void Geomerty::ViewerData::copy_options(const ViewerCore& from, const ViewerCore& to)
+void MOON::ViewerData::copy_options(const ViewerCore& from, const ViewerCore& to)
 {
 	to.set(show_overlay, from.is_set(show_overlay));
 	to.set(show_overlay_depth, from.is_set(show_overlay_depth));
@@ -133,17 +130,11 @@ void Geomerty::ViewerData::copy_options(const ViewerCore& from, const ViewerCore
 	to.set(show_lines, from.is_set(show_lines));
 }
 
-void Geomerty::ViewerData::set_colors(const Eigen::MatrixXd& C)
+void MOON::ViewerData::set_colors(const Eigen::MatrixXd& C)
 {
 	using namespace std;
 	using namespace Eigen;
-	// This Gouraud coloring should be deprecated in favor of Phong coloring in
-	// set-data
-	if (C.rows() > 0 && C.cols() == 1)
-	{
-		assert(false && "deprecated: call set_data directly instead");
-		return set_data(C);
-	}
+
 	// Ambient color should be darker color
 	const auto ambient = [](const MatrixXd& C)->MatrixXd
 		{
@@ -218,7 +209,7 @@ void Geomerty::ViewerData::set_colors(const Eigen::MatrixXd& C)
 
 }
 
-void Geomerty::ViewerData::set_uv(const Eigen::MatrixXd& UV)
+void MOON::ViewerData::set_uv(const Eigen::MatrixXd& UV)
 {
 	using namespace std;
 	if (UV.rows() == V.rows())
@@ -230,14 +221,14 @@ void Geomerty::ViewerData::set_uv(const Eigen::MatrixXd& UV)
 	dirty |= MeshGL::DIRTY_UV;
 }
 
-void Geomerty::ViewerData::set_uv(const Eigen::MatrixXd& UV_V, const Eigen::MatrixXi& UV_F)
+void MOON::ViewerData::set_uv(const Eigen::MatrixXd& UV_V, const Eigen::MatrixXi& UV_F)
 {
 	V_uv = UV_V.block(0, 0, UV_V.rows(), 2);
 	F_uv = UV_F;
 	dirty |= MeshGL::DIRTY_UV;
 }
 
-void Geomerty::ViewerData::set_texture(
+void MOON::ViewerData::set_texture(
 	const Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic>& R,
 	const Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic>& G,
 	const Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic>& B)
@@ -249,7 +240,7 @@ void Geomerty::ViewerData::set_texture(
 	dirty |= MeshGL::DIRTY_TEXTURE;
 }
 
-void Geomerty::ViewerData::set_texture(
+void MOON::ViewerData::set_texture(
 	const Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic>& R,
 	const Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic>& G,
 	const Eigen::Matrix<unsigned char, Eigen::Dynamic, Eigen::Dynamic>& B,
@@ -262,41 +253,8 @@ void Geomerty::ViewerData::set_texture(
 	dirty |= MeshGL::DIRTY_TEXTURE;
 }
 
-void Geomerty::ViewerData::set_data(
-	const Eigen::VectorXd& D,
-	double caxis_min,
-	double caxis_max,
-	ColorMapType cmap,
-	int num_steps)
-{
-	if (!show_texture)
-	{
-		Eigen::MatrixXd CM;
-		colormap(cmap, Eigen::VectorXd::LinSpaced(num_steps, 0, 1).eval(), 0, 1, CM);
-		set_colormap(CM);
-	}
-	Eigen::MatrixXd UV = ((D.array() - caxis_min) / (caxis_max - caxis_min)).replicate(1, 2);
-	if (D.size() == V.rows())
-	{
-		set_uv(UV);
-	}
-	else
-	{
-		assert(D.size() == F.rows());
-		Eigen::MatrixXi UV_F =
-			Eigen::VectorXi::LinSpaced(F.rows(), 0, F.rows() - 1).replicate(1, 3);
-		set_uv(UV, UV_F);
-	}
-}
 
-void Geomerty::ViewerData::set_data(const Eigen::VectorXd& D, ColorMapType cmap, int num_steps)
-{
-	const double caxis_min = D.minCoeff();
-	const double caxis_max = D.maxCoeff();
-	return set_data(D, caxis_min, caxis_max, cmap, num_steps);
-}
-
-void Geomerty::ViewerData::set_colormap(const Eigen::MatrixXd& CM)
+void MOON::ViewerData::set_colormap(const Eigen::MatrixXd& CM)
 {
 	assert(CM.cols() == 3 && "colormap CM should have 3 columns");
 	// Convert to R,G,B textures
@@ -313,7 +271,7 @@ void Geomerty::ViewerData::set_colormap(const Eigen::MatrixXd& CM)
 	meshgl.tex_wrap = GL_CLAMP_TO_EDGE;
 }
 
-void Geomerty::ViewerData::set_points(
+void MOON::ViewerData::set_points(
 	const Eigen::MatrixXd& P,
 	const Eigen::MatrixXd& C)
 {
@@ -322,7 +280,7 @@ void Geomerty::ViewerData::set_points(
 	add_points(P, C);
 }
 
-void Geomerty::ViewerData::add_points(const Eigen::MatrixXd& P, const Eigen::MatrixXd& C)
+void MOON::ViewerData::add_points(const Eigen::MatrixXd& P, const Eigen::MatrixXd& C)
 {
 	Eigen::MatrixXd P_temp;
 
@@ -343,12 +301,12 @@ void Geomerty::ViewerData::add_points(const Eigen::MatrixXd& P, const Eigen::Mat
 	dirty |= MeshGL::DIRTY_OVERLAY_POINTS;
 }
 
-void Geomerty::ViewerData::clear_points()
+void MOON::ViewerData::clear_points()
 {
 	points.resize(0, 6);
 }
 
-void Geomerty::ViewerData::set_edges(
+void MOON::ViewerData::set_edges(
 	const Eigen::MatrixXd& P,
 	const Eigen::MatrixXi& E,
 	const Eigen::MatrixXd& C)
@@ -379,7 +337,7 @@ void Geomerty::ViewerData::set_edges(
 	dirty |= MeshGL::DIRTY_OVERLAY_LINES;
 }
 
-void Geomerty::ViewerData::set_edges_from_vector_field(
+void MOON::ViewerData::set_edges_from_vector_field(
 	const Eigen::MatrixXd& P,
 	const Eigen::MatrixXd& V,
 	const Eigen::MatrixXd& C)
@@ -397,7 +355,7 @@ void Geomerty::ViewerData::set_edges_from_vector_field(
 	set_edges(PV, E, C.rows() == 1 ? C : C.replicate<2, 1>());
 }
 
-void Geomerty::ViewerData::add_edges(const Eigen::MatrixXd& P1, const Eigen::MatrixXd& P2, const Eigen::MatrixXd& C)
+void MOON::ViewerData::add_edges(const Eigen::MatrixXd& P1, const Eigen::MatrixXd& P2, const Eigen::MatrixXd& C)
 {
 	Eigen::MatrixXd P1_temp, P2_temp;
 
@@ -423,12 +381,12 @@ void Geomerty::ViewerData::add_edges(const Eigen::MatrixXd& P1, const Eigen::Mat
 	dirty |= MeshGL::DIRTY_OVERLAY_LINES;
 }
 
-void Geomerty::ViewerData::clear_edges()
+void MOON::ViewerData::clear_edges()
 {
 	lines.resize(0, 9);
 }
 
-void Geomerty::ViewerData::add_label(const Eigen::VectorXd& P, const std::string& str)
+void MOON::ViewerData::add_label(const Eigen::VectorXd& P, const std::string& str)
 {
 	Eigen::RowVectorXd P_temp;
 
@@ -449,7 +407,7 @@ void Geomerty::ViewerData::add_label(const Eigen::VectorXd& P, const std::string
 	dirty |= MeshGL::DIRTY_CUSTOM_LABELS;
 }
 
-void Geomerty::ViewerData::set_labels(const Eigen::MatrixXd& P, const std::vector<std::string>& str)
+void MOON::ViewerData::set_labels(const Eigen::MatrixXd& P, const std::vector<std::string>& str)
 {
 	assert(P.rows() == str.size() && "position # and label # do not match!");
 	assert(P.cols() == 3 && "dimension of label positions incorrect!");
@@ -459,13 +417,13 @@ void Geomerty::ViewerData::set_labels(const Eigen::MatrixXd& P, const std::vecto
 	dirty |= MeshGL::DIRTY_CUSTOM_LABELS;
 }
 
-void Geomerty::ViewerData::clear_labels()
+void MOON::ViewerData::clear_labels()
 {
 	labels_positions.resize(0, 3);
 	labels_strings.clear();
 }
 
-void Geomerty::ViewerData::clear()
+void MOON::ViewerData::clear()
 {
 	V = Eigen::MatrixXd(0, 3);
 	F = Eigen::MatrixXi(0, 3);
@@ -495,7 +453,26 @@ void Geomerty::ViewerData::clear()
 	labels_strings.clear();
 
 	for (auto custom_shader : meshgl.custom_shaders) {
-		destroy_shader_program(custom_shader.first);//free();
+
+		GLsizei count;
+		// shader id
+		GLuint s;
+
+		do
+		{
+			// Try to get at most *1* attached shader
+			glGetAttachedShaders(custom_shader.first, 1, &count, &s);
+
+			// Check that we actually got *1*
+			if (count == 1)
+			{
+				// Detach and delete this shader
+				glDetachShader(custom_shader.first, s);
+				glDeleteShader(s);
+			}
+		} while (count > 0);
+		// Now that all of the shaders are gone we can just delete the program
+		glDeleteProgram(custom_shader.first);
 	}
 	meshgl.custom_shaders.clear();
 	face_based = false;
@@ -506,7 +483,7 @@ void Geomerty::ViewerData::clear()
 
 }
 
-void Geomerty::ViewerData::compute_normals()
+void MOON::ViewerData::compute_normals()
 {
 	if (V.cols() == 2)
 	{
@@ -522,7 +499,7 @@ void Geomerty::ViewerData::compute_normals()
 	dirty |= MeshGL::DIRTY_NORMAL;
 }
 
-void Geomerty::ViewerData::uniform_colors(
+void MOON::ViewerData::uniform_colors(
 	const Eigen::Vector3d& ambient,
 	const Eigen::Vector3d& diffuse,
 	const Eigen::Vector3d& specular)
@@ -538,7 +515,7 @@ void Geomerty::ViewerData::uniform_colors(
 	uniform_colors(ambient4, diffuse4, specular4);
 }
 
-void Geomerty::ViewerData::uniform_colors(
+void MOON::ViewerData::uniform_colors(
 	const Eigen::Vector4d& ambient,
 	const Eigen::Vector4d& diffuse,
 	const Eigen::Vector4d& specular)
@@ -567,7 +544,7 @@ void Geomerty::ViewerData::uniform_colors(
 	dirty |= MeshGL::DIRTY_SPECULAR | MeshGL::DIRTY_DIFFUSE | MeshGL::DIRTY_AMBIENT;
 }
 
-void Geomerty::ViewerData::normal_matcap()
+void MOON::ViewerData::normal_matcap()
 {
 	const int size = 512;
 	texture_R.resize(size, size);
@@ -592,7 +569,7 @@ void Geomerty::ViewerData::normal_matcap()
 	dirty |= MeshGL::DIRTY_TEXTURE;
 }
 
-void Geomerty::ViewerData::grid_texture()
+void MOON::ViewerData::grid_texture()
 {
 	unsigned size = 512;
 	unsigned size2 = size / 2;
@@ -623,8 +600,8 @@ void Geomerty::ViewerData::grid_texture()
 }
 
 // Populate VBOs of a particular label stype (Vert, Face, Custom)
-void Geomerty::ViewerData::update_labels(
-	Geomerty::MeshGL::TextGL& GL_labels,
+void MOON::ViewerData::update_labels(
+	MOON::MeshGL::TextGL& GL_labels,
 	const Eigen::MatrixXd& positions,
 	const std::vector<std::string>& strings
 ) {
@@ -656,10 +633,10 @@ void Geomerty::ViewerData::update_labels(
 	}
 }
 
-void Geomerty::ViewerData::updateGL(
-	const Geomerty::ViewerData& data,
+void MOON::ViewerData::updateGL(
+	const MOON::ViewerData& data,
 	const bool invert_normals,
-	Geomerty::MeshGL& meshgl
+	MOON::MeshGL& meshgl
 )
 {
 	if (!meshgl.is_initialized)

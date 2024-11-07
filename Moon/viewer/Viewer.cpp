@@ -1,12 +1,11 @@
 #include "Viewer.h"
-#include<glad/glad.h>
-#include "report_gl_error.h"
-#include"project.h"
-#include"unproject.h"
-#include"two_axis_valuator_fixed_up.h"
-#include "snap_to_canonical_view_quat.h"
+#include "glutil/project.h"
+#include "glutil/unproject.h"
+#include "glutil/two_axis_valuator_fixed_up.h"
+#include  <glad/glad.h>
 
-namespace Geomerty
+
+namespace MOON
 {
 
 	bool Viewer::mouse_down(MouseButton button)
@@ -188,14 +187,14 @@ namespace Geomerty
 
 	template <typename T>
 	void Viewer::draw_buffer(
-		Geomerty::ViewerCore& core,
+		MOON::ViewerCore& core,
 		Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& R,
 		Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& G,
 		Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& B,
 		Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& A,
 		Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& D)
 	{
-		// follows Geomerty::ViewerCore::draw_buffer, image is transposed from
+		// follows MOON::ViewerCore::draw_buffer, image is transposed from
 		// typical matrix view
 		const int width = R.rows() ? R.rows() : core.viewport(2);
 		const int height = R.cols() ? R.cols() : core.viewport(3);
@@ -230,7 +229,7 @@ namespace Geomerty
 
 
 			assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
-			report_gl_error("glCheckFramebufferStatus: ");
+			//report_gl_error("glCheckFramebufferStatus: ");
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
 
@@ -292,9 +291,8 @@ namespace Geomerty
 		////////////////////////////////////////////////////////////////////////
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
-		report_gl_error("before: ");
+
 		glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-		report_gl_error("glBlitFramebuffer: ");
 
 
 		////////////////////////////////////////////////////////////////////////
@@ -359,12 +357,14 @@ namespace Geomerty
 			// when there are multiple viewports (through the `callback_post_resize` callback)
 		}
 	}
-
+	/*
 	void Viewer::snap_to_canonical_quaternion()
 	{
 		Eigen::Quaternionf snapq = this->core().trackball_angle;
 		snap_to_canonical_view_quat(snapq, 1.0f, this->core().trackball_angle);
 	}
+	*/
+
 
 
 	ViewerData& Viewer::data(int mesh_id /*= -1*/)
@@ -502,7 +502,7 @@ namespace Geomerty
 	}
 } // end namespace
 
-template void Geomerty::Viewer::draw_buffer<unsigned char>(Geomerty::ViewerCore&, Eigen::Matrix<unsigned char, -1, -1, 0, -1, -1>&, Eigen::Matrix<unsigned char, -1, -1, 0, -1, -1>&, Eigen::Matrix<unsigned char, -1, -1, 0, -1, -1>&, Eigen::Matrix<unsigned char, -1, -1, 0, -1, -1>&, Eigen::Matrix<unsigned char, -1, -1, 0, -1, -1>&);
-template void Geomerty::Viewer::draw_buffer<double>(Geomerty::ViewerCore&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&);
-template void Geomerty::Viewer::draw_buffer<float>(Geomerty::ViewerCore&, Eigen::Matrix<float, -1, -1, 0, -1, -1>&, Eigen::Matrix<float, -1, -1, 0, -1, -1>&, Eigen::Matrix<float, -1, -1, 0, -1, -1>&, Eigen::Matrix<float, -1, -1, 0, -1, -1>&, Eigen::Matrix<float, -1, -1, 0, -1, -1>&);
+template void MOON::Viewer::draw_buffer<unsigned char>(MOON::ViewerCore&, Eigen::Matrix<unsigned char, -1, -1, 0, -1, -1>&, Eigen::Matrix<unsigned char, -1, -1, 0, -1, -1>&, Eigen::Matrix<unsigned char, -1, -1, 0, -1, -1>&, Eigen::Matrix<unsigned char, -1, -1, 0, -1, -1>&, Eigen::Matrix<unsigned char, -1, -1, 0, -1, -1>&);
+template void MOON::Viewer::draw_buffer<double>(MOON::ViewerCore&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&);
+template void MOON::Viewer::draw_buffer<float>(MOON::ViewerCore&, Eigen::Matrix<float, -1, -1, 0, -1, -1>&, Eigen::Matrix<float, -1, -1, 0, -1, -1>&, Eigen::Matrix<float, -1, -1, 0, -1, -1>&, Eigen::Matrix<float, -1, -1, 0, -1, -1>&, Eigen::Matrix<float, -1, -1, 0, -1, -1>&);
 
