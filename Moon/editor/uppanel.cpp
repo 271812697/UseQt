@@ -12,11 +12,10 @@ namespace MOON {
 		QSizePolicy sizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 		sizePolicy.setHorizontalStretch(0);
 		sizePolicy.setVerticalStretch(0);
-		//sizePolicy.setHeightForWidth(preview_window_->sizePolicy().hasHeightForWidth());
-		//preview_window_->setSizePolicy(sizePolicy);
 
 		QVBoxLayout* layout = new QVBoxLayout(this);
 		layout->addWidget(preview_window_);
+
 	}
 
 }

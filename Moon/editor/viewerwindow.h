@@ -2,7 +2,8 @@
 #include "viewer/Viewer.h"
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_4_5_Core>
-
+#include <QtNodes/NodeData>
+using QtNodes::NodeData;
 namespace MOON {
 
 	class Editor;
@@ -33,5 +34,7 @@ namespace MOON {
 	public:
 		Viewer viewer;
 
+	public Q_SLOTS:
+		void viewnode(const std::shared_ptr<NodeData>& node);
 	};
 }

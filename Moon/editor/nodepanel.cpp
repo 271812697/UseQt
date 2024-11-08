@@ -5,6 +5,7 @@
 #include <QtNodes/NodeDelegateModelRegistry>
 #include "QMenuBar"
 #include "nodepanel.h"
+#include "nodes/ReadMeshModel.h"
 using QtNodes::ConnectionStyle;
 using QtNodes::DataFlowGraphicsScene;
 using QtNodes::DataFlowGraphModel;
@@ -14,6 +15,7 @@ using QtNodes::NodeDelegateModelRegistry;
 static std::shared_ptr<NodeDelegateModelRegistry> registerDataModels()
 {
 	auto ret = std::make_shared<NodeDelegateModelRegistry>();
+	ret->registerModel<ReadMeshModel>("ReadMesh");
 	return ret;
 }
 static void setNodeStyle()
