@@ -41,7 +41,7 @@ float log10(float x) { return log(x) * INV_LN10; }
 float max2(const vec2 v) { return max(v.x, v.y); }
 vec2 step3(const vec2 a, const vec2 x, const vec2 b) { return step(a, x) - step(b, x); }
 in vec2 _uv;
- out vec4 color;
+out vec4 color;
 
 void main() {
     // higher derivative = farther cell = smaller LOD = less details = more transparent

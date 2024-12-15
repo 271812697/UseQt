@@ -1,5 +1,6 @@
 #pragma once
 #include "viewer/Viewer.h"
+
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_4_5_Core>
 #include <QtNodes/NodeData>
@@ -31,8 +32,12 @@ namespace MOON {
 		void mouseReleaseEvent(QMouseEvent* event) override;
 
 		void wheelEvent(QWheelEvent* event) override;
+		void keyPressEvent(QKeyEvent* event) override;
+		void keyReleaseEvent(QKeyEvent* event) override;
 	public:
 		Viewer viewer;
+	private:
+		bool blockMouseMessage = false;
 
 	public Q_SLOTS:
 		void viewnode(const std::shared_ptr<NodeData>& node);

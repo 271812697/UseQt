@@ -22,6 +22,23 @@ static unsigned int load_shader(
 	const char* c = src.c_str();
 	glShaderSource(s, 1, &c, NULL);
 	glCompileShader(s);
+	GLint status;
+	glGetShaderiv(s, GL_COMPILE_STATUS, &status);
+
+	if (status == GL_FALSE) {
+		GLint info_log_length;
+		glGetShaderiv(s, GL_INFO_LOG_LENGTH, &info_log_length);
+
+		GLchar* info_log = new GLchar[info_log_length + 1];
+		glGetShaderInfoLog(s, info_log_length, NULL, info_log);
+		fprintf(stderr, "Failed to compile shader: %s.\n", info_log);
+
+		delete[] info_log;
+		glDeleteShader(s);  // prevent shader leak
+
+		std::cin.get();  // pause the console before exiting so that we can read error messages
+		exit(EXIT_FAILURE);
+	}
 	return s;
 }
 bool MOON::create_shader_program(
@@ -98,6 +115,24 @@ bool MOON::create_shader_program(
 	}
 	// Link program
 	glLinkProgram(id);
+
+
+	GLint status;
+	glGetProgramiv(id, GL_LINK_STATUS, &status);
+
+	if (status == GL_FALSE) {
+		GLint info_log_length;
+		glGetProgramiv(id, GL_INFO_LOG_LENGTH, &info_log_length);
+
+		GLchar* info_log = new GLchar[info_log_length + 1];
+		glGetProgramInfoLog(id, info_log_length, NULL, info_log);
+
+		fprintf(stderr, "Failed to link shaders: %s", info_log);
+		delete[] info_log;
+
+		std::cin.get();  // pause the console before exiting so that we can read error messages
+		exit(EXIT_FAILURE);
+	}
 	const auto& detach = [&id](const unsigned int shader)
 		{
 			if (shader)

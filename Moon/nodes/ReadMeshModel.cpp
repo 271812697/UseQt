@@ -74,7 +74,7 @@ std::shared_ptr<NodeData>  ReadMeshModel::outData(PortIndex)
 	using namespace MOON;
 	if (!_srf.get()) {
 		std::shared_ptr<SurfaceMesh> mesh = std::make_shared<SurfaceMesh>();
-		_path->str();
+
 		const std::filesystem::path fp(_path->str().toStdString().c_str());
 		if (std::filesystem::exists(fp)) {
 			auto ext = fp.extension().string();
