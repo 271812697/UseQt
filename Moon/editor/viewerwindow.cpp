@@ -7,8 +7,8 @@
 #include "core/read_mesh.h"
 #include "algorithm/mesh_triangulate.h"
 namespace MOON {
-	static float cursorX;
-	static float cursorY;
+	//static float cursorX;
+	//static float cursorY;
 	static float viewW;
 	static float viewH;
 	Eigen::Matrix4f LookAt(const  Eigen::Vector3<float>& _from, const  Eigen::Vector3<float>& _to, const  Eigen::Vector3<float>& _up = Eigen::Vector3<float>(0.0f, 1.0f, 0.0f));
@@ -28,6 +28,7 @@ namespace MOON {
 			viewer_instance = this;
 			//设置可以捕获鼠标移动消息
 			this->setMouseTracking(true);
+			this->grabKeyboard();
 			//反锯齿
 			QSurfaceFormat format;
 			format.setSamples(4);
@@ -76,27 +77,14 @@ namespace MOON {
 		glBindFramebuffer(GL_FRAMEBUFFER, defaultFramebufferObject());
 		guizmoRender->Clear();
 		viewer.draw();
-		/*
 
-	struct CameraParam {
-		float viewportWidth;
-		float viewportHeight;
-		float projectY;
-		bool orthProj = false;
-		Eigen::Vector3<float> eye;
-		Eigen::Vector3<float>viewDirectioin;
-		Eigen::Vector3<float>rayOrigin;
-		Eigen::Vector3<float>rayDirection;
-		Eigen::Matrix4f view;
-		Eigen::Matrix4f proj;
-		Eigen::Matrix4f viewProj;
-
-	};
-		*/
 
 		const auto view = viewer.core().view;
+		const auto viewinverse = view.inverse();
 		const auto proj = viewer.core().proj;
-		Eigen::Matrix4f camWorld = LookAt(viewer.core().camera_eye, 2 * viewer.core().camera_eye - viewer.core().camera_center);
+		Eigen::Vector3<float> vieweye = Eigen::Vector3<float>(viewinverse(0, 3), viewinverse(1, 3), viewinverse(2, 3));
+		Eigen::Vector3<float> viewforward = Eigen::Vector3<float>(viewinverse(0, 2), viewinverse(1, 2), viewinverse(2, 2)).normalized();
+		Eigen::Matrix4f camWorld = viewinverse;
 
 		// World space cursor ray from mouse position; for VR this might be the position/orientation of the HMD or a tracked controller.
 		Eigen::Vector2<float> cursorPos = Eigen::Vector2<float>(viewer.current_mouse_x, viewer.current_mouse_y);
@@ -120,7 +108,7 @@ namespace MOON {
 		}
 		else
 		{
-			rayOrigin = viewer.core().camera_eye;
+			rayOrigin = vieweye;
 			rayDirection(0) = cursorPos.x() / proj(0, 0);
 			rayDirection(1) = cursorPos.y() / proj(1, 1);
 			rayDirection(2) = -1.0f;
@@ -128,26 +116,42 @@ namespace MOON {
 			Eigen::Vector3<float>rayDirectionNormalized = rayDirection.normalized();
 			Eigen::Vector4<float> it = camWorld * Eigen::Vector4<float>(rayDirectionNormalized.x(), rayDirectionNormalized.y(), rayDirectionNormalized.z(), 0.0f);
 			rayDirection = Eigen::Vector3<float>(it.x(), it.y(), it.z());
+			//printf("Ray Direction(%f,%f,%f)\n", rayDirection.x(), rayDirection.y(), rayDirection.z());
 
 		}
-		CameraParam  cameraParam = {
-			viewer.core().viewport.z(),
-			viewer.core().viewport.w(),
-			tan(90.0 / 360.0 * PI) * 2,
-			false,
-			viewer.core().camera_eye,
-			(viewer.core().camera_eye - viewer.core().camera_center).normalized(),
-			rayOrigin,
-			rayDirection,
-			viewer.core().view,
-			viewer.core().proj,
-			proj * view
-		};
-		guizmoRender->getCameraParam() = cameraParam;
+		CameraParam& cameraParam = guizmoRender->getCameraParam();
+		cameraParam.viewportWidth = viewer.core().viewport.z();
+		cameraParam.viewportHeight = viewer.core().viewport.w();
+		cameraParam.projectY = tan(90.0 / 360.0 * PI) * 2;
+		cameraParam.orthProj = false;
+		cameraParam.eye = vieweye;
+		cameraParam.viewDirectioin = viewforward;
+		cameraParam.rayOrigin = rayOrigin;
+		cameraParam.rayDirection = rayDirection;
+		cameraParam.view = view;
+		cameraParam.proj = proj;
+		cameraParam.viewProj = proj * view;
+		//printf("view Direction(%f,%f,%f)\n", viewforward.x(), viewforward.y(), viewforward.z());
+		cameraParam.m_keyDown[Mouse_Left] = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
+		bool ctrlDown = (GetAsyncKeyState(VK_LCONTROL) & 0x8000) != 0;
+		cameraParam.m_keyDown[Key_L] = ctrlDown && (GetAsyncKeyState(0x4c) & 0x8000) != 0;
+		cameraParam.m_keyDown[Key_T] = ctrlDown && (GetAsyncKeyState(0x54) & 0x8000) != 0;
+		cameraParam.m_keyDown[Key_R] = ctrlDown && (GetAsyncKeyState(0x52) & 0x8000) != 0;
+		cameraParam.m_keyDown[Key_S] = ctrlDown && (GetAsyncKeyState(0x53) & 0x8000) != 0;
+
+		cameraParam.m_snapTranslation = ctrlDown ? 0.5f : 0.0f;
+		cameraParam.m_snapRotation = ctrlDown ? 0.523f : 0.0f;
+		cameraParam.m_snapScale = ctrlDown ? 0.5f : 0.0f;
+
+		guizmoRender->NewFrame();
 		static Eigen::Matrix4f model = Eigen::Matrix4f::Identity();
-		//guizmoRender->DrawTeapot(model, proj * view);
-		guizmoRender->Draw(model);
-		guizmoRender->Submit();
+
+
+		//guizmoRender->Draw(model);
+		guizmoRender->DrawManpulate("Mode", model);
+		guizmoRender->DrawTeapot(model, proj * view);
+		//guizmoRender->Submit();
+		guizmoRender->EndFrame();
 		//grid_render->DrawGrid(viewer.core().camera_eye, proj * view);
 
 
@@ -162,7 +166,7 @@ namespace MOON {
 
 		QOpenGLWidget::resizeEvent(event);
 		viewer.post_resize(event->size().width() * 1.5, event->size().height() * 1.5);
-		//viewer.post_resize(event->size().width(), event->size().height());
+
 		viewW = event->size().width();
 		viewH = event->size().height();
 	}
@@ -185,8 +189,8 @@ namespace MOON {
 	{
 
 		auto pos = event->localPos();
-		cursorX = pos.x() * 1.5;
-		cursorY = pos.y() * 1.5;
+		//cursorX = pos.x() * 1.5;
+		//cursorY = pos.y() * 1.5;
 		viewer.mouse_move(pos.x() * 1.5, pos.y() * 1.5);
 	}
 
